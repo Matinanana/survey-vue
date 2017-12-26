@@ -1,0 +1,104 @@
+<template>
+  <div class="container" ref="container">
+    <scroll ref="scroll" class="container-content" :data="datalist">
+        <div>
+          <h1>test</h1>
+          <ul>
+          	<li @click="selectItem(item)" v-for="item of datalist" class="item">
+          		<h2 v-if="type == 3" v-html="item.endDate"></h2>
+          		<p class="desc" v-html="item.answerTime"></p>
+          	</li>
+          </ul>
+        </div>
+    </scroll>
+  </div>
+</template>
+
+<script type="text/ecmascript-6">
+	import api from 'api/url'
+	import scroll from 'components/base/scroll/scroll'
+	
+	export default {
+  data(){
+    return {
+      title: '',
+      datalist: [],
+      baseAnswerUrl: '',
+      type: '',
+      backUrl: {path: '/category'},
+      params: {
+        pageNo: 1
+      }
+    }
+  },
+  methods: {
+    getAnswerUrl(id) {
+      let url = '';
+      if (this.type == 3) {
+        url = this.baseAnswerUrl + encodeURIComponent(window.btoa(id)) + '&type=3';
+      } else {
+        url = this.baseAnswerUrl + id + '&userId=' + localStorage.getItem('userId') + '&type=4'
+      }
+      return url;
+    },
+    getAnswerList() {
+//    this.loading = true;
+      if (this.type == 3) {
+        api.getAnswerList(this.params).then((data) => {
+          if (data.resultCode === 'SUCCESS') {
+            let res = data.data || {};
+            // this.datalist = res.qnaireList;
+            this.datalist = this.datalist.concat(res.qnaireList);
+//          this.loading = false;
+          }
+        })
+      } else {
+        api.getUserAnswerList(this.params).then((data) => {
+          if (data.resultCode === 'SUCCESS') {
+            let res = data.data || {};
+            this.datalist = this.datalist.concat(res.answerRecordList);
+//          this.loading = false;
+          }
+        })
+      }
+    },
+    loadMore() {
+      this.params.pageNo++;
+      this.getAnswerList()
+    }
+  },
+  components: {
+    scroll
+  },
+  mounted() {
+    this.type = this.$route.params.type || 3;
+    if (this.type == 3) {
+      this.title = '待回答';
+      this.params.status = this.type;
+      this.baseAnswerUrl = '/views/ques/answer.html?id='
+    } else {
+      this.title = '已回答';
+      delete this.params.status;
+      this.baseAnswerUrl = '/views/ques/answerdet.html?id='
+    }
+    this.getAnswerList()
+  }
+}
+</script>
+
+
+<style>
+	.container{
+    position: fixed;
+    /*width: 100%;*/
+    top: 1.2rem;
+    bottom: 0;
+   }
+	.container-content{
+  	height: 100%;
+  	overflow: hidden;
+  	}
+	.item{
+	  height: 80px;
+	}
+</style>

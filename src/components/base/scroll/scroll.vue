@@ -1,0 +1,126 @@
+<template>
+	<div ref="wrapper">
+		<slot></slot>
+	</div>
+</template>
+
+<script>
+	import BScroll from 'better-scroll'
+	
+	export default{
+		props:{
+			probeType:{//为1时会非实时（屏幕滑动超过一定时间后）派发scroll事件
+				type:Number,
+				default:1
+			},
+			click:{//点击
+				type:Boolean,
+				default:true
+			},
+			data:{//数据
+				type:Array,
+				default:null
+			},
+			listenScroll:{//监听滚动事件
+				type:Boolean,
+				default:false
+			},
+			pullup:{//上拉刷新
+				type:Boolean,
+				default:false
+			},
+			pulldown:{//上拉刷新
+				type:Boolean,
+				default:false
+			},
+			beforeScroll:{
+				type:Boolean,
+				default:false
+			},
+			refreshDelay:{
+				type:Number,
+				default:20
+			},
+		},
+		mounted(){
+			setTimeout(()=>{
+				this._initScroll()				
+			},20)
+		},
+		methods:{
+			_initScroll(){
+				if(!this.$refs.wrapper){
+					return
+				}
+				this.scroll=new BScroll(this.$refs.wrapper,{
+					probeType:this.probeType,
+					click:this.click
+				})
+				//监听scroll的滚动事件,pos是对象有x,y轴属性
+				if(this.listenScroll){
+					let me=this
+					this.scroll.on('scroll',(pos)=>{
+						//on和emit的事件必须是在一个公共的实例里面，才能被vue监听,所以用me.$emit()
+						//$emit():触发当前实例上的事件,参数传给监听器回调。
+						me.$emit('scroll',pos)
+					})
+				}
+				//如果存在上拉刷新
+				if(this.pullup){
+					//绑定事件scrollEnd指的是停止滚动
+					this.scroll.on('scrollEnd',()=>{
+						if(this.scroll.y<=(this.scroll.maxScrollY+50)){
+							//scrollToEnd滚动到底部事件
+							this.$emit('scrollToEnd')
+						}
+					})
+				}
+				
+				//是否存在下拉刷新
+				if(this.pulldown){
+					this.scroll.on('touchend',(pos)=>{
+						//下拉动作
+						if(pos.y>50){
+							this.$emit('pulldown')
+						}
+					})
+				}
+				
+				if(this.beforeScroll){
+					this.scroll.on('beforeScrollStart',()=>{
+						this.$emit('beforeScroll')
+					})
+				}
+				
+			},
+			enable(){//启用better-scroll,默认开启
+				this.scroll&&this.scroll.enable()
+			},
+			disable(){
+			//禁用better-scroll,Dom事件如
+			//（touchstart,touchmove,touchend）的回调函数不再响应
+				this.scroll&&this.scroll.disable()
+			},
+			refresh(){//触发时机：refresh方法调用完成后
+				this.scroll&&this.scroll.refresh()
+			},
+			scrollTo(){//扩展方法：滚动到相应位置
+				//this.scroll指的是better-scroll的实例，scrollTo.apply可以传递参数
+				this.scroll&&this.scroll.scrollTo.apply(this.scroll,arguments)
+			},
+			scrollToElement(){//扩展方法：滚动到某个元素位置，第二个参数是滚动动画时间
+				this.scroll&&this.scroll.scrollToElement.apply(this.scroll,arguments)
+			}
+		},
+		watch:{//监听数据，数据有变化时，更新scroll的长度等
+			data(){
+				setTimeout(()=>{
+					this.refresh()
+				},20)
+			}
+		}
+	}
+</script>
+
+<style>
+</style>
