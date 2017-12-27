@@ -92,7 +92,7 @@ export default {
   		let firstTouch=e.touches[0]
 			this.touch.y2=firstTouch.pageY
 			let delta=Math.min(0,Math.max(-60,this.touch.y2-this.touch.y1))
-			if(scroll<listsc){				
+			if(scroll<listsc&&Math.abs(delta)>30){				
 				this.$refs.gheader.style.transform=`translateY(${delta}px)`
 				this.$refs.gheader.style.transition=`transform 1s`
 			}
@@ -102,8 +102,9 @@ export default {
   	onTouchEnd(e){
   		let listsc=this.$refs.listsc.offsetHeight
   		let scroll=this.$refs.scroll.$el.offsetHeight
-  		if(scroll<listsc){		
-				let delta=this.touch.y2-this.touch.y1
+  		let delta=this.touch.y2-this.touch.y1
+  		if(scroll<listsc&&Math.abs(delta)>30){		
+				
 				if(delta>0){
 					this.$refs.gheader.style.transform=`translateY(0px)`
 				}else{
