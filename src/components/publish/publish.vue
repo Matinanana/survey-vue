@@ -1,10 +1,17 @@
 <template lang="html">
   <div class="publish">
-    <g-header :title="title"></g-header>
+  	<div ref="gheader" class="header-item">
+    	<g-header :title="title"></g-header>
+  	</div>
     <!-- <div v-if="datalist.length > 0" :style="{ height: wrapperHeight + 'px' }" style="-webkit-overflow-scrolling: auto" ref="wrapper"> -->
       <!-- <mt-loadmore :bottom-method="loadMore" :bottom-all-loaded="allLoaded" ref="loadmore"> -->
-    <scroll class="publish-list" :data="datalist" :pulldown="pulldown" @pulldown="loadData()">
-    	<div>
+    <scroll class="publish-list" ref="scroll"
+    	:data="datalist" 
+    	:pulldown="pulldown" 
+    	@pulldown="loadData()">
+    	<div @touchstart="onTouchStart" ref="listsc"
+    		@touchmove="onTouchMove"
+    		@touchend="onTouchEnd">
     		<div class="publish-list-item"></div>
 	      <!--<router-link class="item" v-for="(item, index) in datalist" :key="item.id" :to="{name: 'summary', params: {id: item.id, type: $route.params.type}}">-->
 	      <router-link class="item" v-for="(item, index) in datalist" :key="index" :to="{name: 'summary', params: {id: item.id, type: $route.params.type}}">
@@ -45,15 +52,15 @@ import gHeader from 'components/base/header/header'
 import empty from 'components/base/empty/empty'
 import paperOp from 'components/base/paper-op/paper-op'
 import scroll from 'components/base/scroll/scroll'
-import {
-  MessageBox
-} from 'mint-ui'
+import {MessageBox} from 'mint-ui'
 
 export default {
   data() {
     return {
+    	scrollY:-1,//观测实时滚动的y轴
       datalist: [],
       pulldown:true,
+      touch:{},
       title: '已发布',
       stop: false,
       editing: false,
@@ -74,6 +81,37 @@ export default {
   	this.loadData()
   },
   methods: {
+  	onTouchStart(e){//记录当前y轴值
+  		let firstTouch=e.touches[0]
+			this.touch.y1=firstTouch.pageY
+  	},
+  	onTouchMove(e){//计算滚动位置
+  		let listsc=this.$refs.listsc.offsetHeight
+  		let scroll=this.$refs.scroll.$el.offsetHeight
+//		console.log(listsc,scroll)
+  		let firstTouch=e.touches[0]
+			this.touch.y2=firstTouch.pageY
+			let delta=Math.min(0,Math.max(-60,this.touch.y2-this.touch.y1))
+			if(scroll<listsc){				
+				this.$refs.gheader.style.transform=`translateY(${delta}px)`
+				this.$refs.gheader.style.transition=`transform 1s`
+			}
+//			console.log(delta)
+
+  	},
+  	onTouchEnd(e){
+  		let listsc=this.$refs.listsc.offsetHeight
+  		let scroll=this.$refs.scroll.$el.offsetHeight
+  		if(scroll<listsc){		
+				let delta=this.touch.y2-this.touch.y1
+				if(delta>0){
+					this.$refs.gheader.style.transform=`translateY(0px)`
+				}else{
+					this.$refs.gheader.style.transform=`translateY(-60px)`
+				}
+		//		console.log(delta)
+			}
+  	},
     refresh() {
       this.params.pageNo = 1;
       this.loadData(false)
@@ -163,7 +201,7 @@ export default {
     }
 //  this.getPublishList(true)
     this.loadData()
-  }
+	}
 }
 </script>
 
@@ -174,13 +212,20 @@ export default {
     top: 0px;
     bottom: 0px;
     width: 100%;
+    z-index: 30;
+}
+.header-item{
+	position: fixed;
+	width: 100%;
+	height: 2.5rem;
+	z-index: 10;	
 }
 .publish-list {
 	height: 100%;
   overflow: hidden;
 }
 .publish-list-item{
-	padding-top: 2.5rem;
+	height: 2.5rem;
 }
 .item {
   margin-top: 0.5rem;
