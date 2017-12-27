@@ -1,8 +1,12 @@
 <template lang="html">
   <div class="container">
-    <g-header :title="title" :url="backUrl"></g-header>
+  	<div ref="gheader" class="header-item">
+  		<g-header :title="title" :url="backUrl"></g-header>  		
+  	</div>
 	  <scroll ref="scroll" :data="datalist" class="answer-list">
-	  	<div>
+	  	<div @touchstart="onTouchStart" ref="listsc"
+    		@touchmove="onTouchMove"
+    		@touchend="onTouchEnd">
 	  		<div class="list-item"></div>
 	      <a :href="getAnswerUrl(item.id)" class="list" v-for="item in datalist">
 	          <div class="time">
@@ -29,6 +33,7 @@ import scroll from 'components/base/scroll/scroll'
 export default {
   data(){
     return {
+    	touch:{},
       title: '',
       datalist: [],
       baseAnswerUrl: '',
@@ -40,6 +45,35 @@ export default {
     }
   },
   methods: {
+  	onTouchStart(e){//记录当前y轴值
+  		let firstTouch=e.touches[0]
+			this.touch.y1=firstTouch.pageY
+  	},
+  	onTouchMove(e){//计算滚动位置
+  		let listsc=this.$refs.listsc.offsetHeight
+  		let scroll=this.$refs.scroll.$el.offsetHeight
+  		let firstTouch=e.touches[0]
+			this.touch.y2=firstTouch.pageY
+			let delta=Math.min(0,Math.max(-60,this.touch.y2-this.touch.y1))
+			if(scroll<listsc){
+				this.$refs.gheader.style.transform=`translateY(${delta}px)`
+				this.$refs.gheader.style.transition=`transform 1s`
+			}
+//			console.log(delta)
+  	},
+  	onTouchEnd(e){
+  		let listsc=this.$refs.listsc.offsetHeight
+  		let scroll=this.$refs.scroll.$el.offsetHeight
+			let delta=this.touch.y2-this.touch.y1
+			if(scroll<listsc){
+				if(delta>0){
+					this.$refs.gheader.style.transform=`translateY(0px)`
+				}else{
+					this.$refs.gheader.style.transform=`translateY(-60px)`
+				}
+		//		console.log(delta)
+			}
+  	},
     getAnswerUrl(id) {
       let url = '';
       if (this.type == 3) {
@@ -103,6 +137,12 @@ export default {
 	top: 1px;
 	bottom: 0px;
   background-color: #dddddd;
+}
+.header-item{
+	position: fixed;
+	width: 100%;
+	height: 2.5rem;
+	z-index: 10;	
 }
 .answer-list {
 	height: 100%;
