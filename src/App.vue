@@ -1,14 +1,30 @@
 <template>
-  <div id="app">
-    <transition name="fade">
-      <router-view/>
-    </transition>
+  <div>
+  <div class="header"></div>
+  <transition :name="transitionName">
+    <router-view class="child-view"></router-view>
+  </transition>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'app'
+  name: 'app',
+  data () {
+	  return {
+	    transitionName: 'slide-left'
+	  }
+	},
+	beforeRouteUpdate (to, from, next) {
+	  let isBack = this.$router.isBack
+	  if (isBack) {
+	    this.transitionName = 'slide-right'
+	  } else {
+	    this.transitionName = 'slide-left'
+	  }
+	  this.$router.isBack = false
+	  next()
+	}
 }
 </script>
 
@@ -32,12 +48,32 @@ i {
   font-style: normal;
 }
 
-.fade-enter-active, .fade-leave-active {
+
+
+.child-view {
+	  position: absolute;
+	  width:100%;
+	  transition: all .3s cubic-bezier(.55,0,.1,1);
+}
+  .slide-left-enter, .slide-right-leave-active {
+    opacity: 0;
+    transform: translateX(100%);
+}
+.slide-left-leave-active, .slide-right-enter {
+    opacity: 0;
+    transform: translateX(-100%);
+}
+
+
+
+
+/*.fade-enter-active, .fade-leave-active {
   transition: opacity .3s;
-}
-.fade-enter, .fade-leave-to /* .fade-leave-active in below version 2.1.8 */ {
+}*/
+/*.fade-enter, .fade-leave-to*/ /* .fade-leave-active in below version 2.1.8 */ 
+/*{
   opacity: 0;
-}
+}*/
 
 a:hover,
 a:visited,
