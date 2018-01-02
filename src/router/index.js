@@ -1,6 +1,14 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
+Router.prototype.goBack = function () {
+  this.isBack = true
+//	window.history.back()
+	window.history.go(-1)
+}
+
+const App = () =>
+  import ('@/App.vue')
 const Login = () =>
   import ('components/login/login.vue')
 const Category = () =>
@@ -39,48 +47,57 @@ function requireLogin(to, from, next) {
   }
 }
 
+
 const router = new Router({
   // mode: 'history',
   base: '/mobile/', //上线必须配置
-  routes: [{
+  routes: [
+  	{
       path: '/',
       redirect: '/login'
-    },
-    {
-      path: '/login',
-      component: Login,
-      // beforeEnter: loginCheck
-    },
-    {
-      path: '/category',
-      name: 'category',
-      component: Category,
-      beforeEnter: requireLogin
-    },
-    {
-      path: '/publish/:type',
-      name: 'publish',
-      component: Publish,
-      beforeEnter: requireLogin
-    },
-    {
-      path: '/answer/:type',
-      name: 'answer',
-      component: Answer,
-      beforeEnter: requireLogin
-    },
-    {
-      path: '/summary/:id/:type',
-      name: 'summary',
-      component: Summary,
-      beforeEnter: requireLogin
-    },
-    {
-      path: '/answer-detail/:id',
-      name: 'answerDetail',
-      component: AnswerDetail,
-      beforeEnter: requireLogin
-    }
+  	},
+  	{
+  		path: '/',
+      name: 'App', 
+      component: App, // 引入页面切换组件
+  		children: [
+		    {
+		      path: '/login',
+		      component: Login,
+		      // beforeEnter: loginCheck
+		    },
+		    {
+		      path: '/category',
+		      name: 'category',
+		      component: Category,
+		      beforeEnter: requireLogin
+		    },
+		    {
+		      path: '/publish/:type',
+		      name: 'publish',
+		      component: Publish,
+		      beforeEnter: requireLogin
+		    },
+		    {
+		      path: '/answer/:type',
+		      name: 'answer',
+		      component: Answer,
+		      beforeEnter: requireLogin
+		    },
+		    {
+		      path: '/summary/:id/:type',
+		      name: 'summary',
+		      component: Summary,
+		      beforeEnter: requireLogin
+		    },
+		    {
+		      path: '/answer-detail/:id',
+		      name: 'answerDetail',
+		      component: AnswerDetail,
+		      beforeEnter: requireLogin
+		    }
+		  ]
+  	}
   ],
   scrollBehavior(to, from, savedPosition) {
     if (to.name === 'summary') {
