@@ -81,8 +81,9 @@ export default {
   	this.loadData()
   },
   methods: {
-  	onTouchStart(e){//记录当前y轴值
+  	onTouchStart(e){//记录当前x y轴值
   		let firstTouch=e.touches[0]
+			this.touch.x1=firstTouch.pageX
 			this.touch.y1=firstTouch.pageY
   	},
   	onTouchMove(e){//计算滚动位置
@@ -90,6 +91,7 @@ export default {
   		let scroll=this.$refs.scroll.$el.offsetHeight
 //		console.log(listsc,scroll)
   		let firstTouch=e.touches[0]
+			this.touch.x2=firstTouch.pageX
 			this.touch.y2=firstTouch.pageY
 			let delta=Math.min(0,Math.max(-60,this.touch.y2-this.touch.y1))
 			if(scroll<listsc&&Math.abs(delta)>30){				
@@ -111,6 +113,11 @@ export default {
 					this.$refs.gheader.style.transform=`translateY(-60px)`
 				}
 		//		console.log(delta)
+			}
+  		let deltaX=this.touch.x2-this.touch.x1
+  		let moveWidth=window.innerWidth*0.8
+			if(Math.abs(deltaX)>moveWidth&&Math.abs(deltaX)>Math.abs(delta)){
+				this.$router.goBack();
 			}
   	},
     refresh() {
