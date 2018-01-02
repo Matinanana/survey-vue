@@ -1,6 +1,6 @@
 <template lang="html">
   <div class="head">
-    <div v-show="showBack" class="back" @click="goBack">
+    <div v-show="showBack" class="back" @click="goback">
       <i class="iconf i-back"></i>返回
     </div>
     <span class="title" v-html="_title"></span>
@@ -38,11 +38,12 @@ export default {
     }
   },
   methods: {
-    goBack() {
+    goback() {
       if(this.url) {
         this.$router.push(this.url)
       } else {
-        this.$router.back();
+//      this.$router.back();
+        this.$router.goBack();
       }
     },
     formateTitle(title) {
