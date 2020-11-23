@@ -73,7 +73,7 @@ export default {
 				}else{
 					this.$refs.gheader.style.transform=`translateY(-60px)`
 				}
-		//		console.log(delta)
+				console.log(delta)
 			}
 			let deltaX=this.touch.x2-this.touch.x1
   		let moveWidth=window.innerWidth*0.8
